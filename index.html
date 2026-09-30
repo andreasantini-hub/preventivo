@@ -223,8 +223,6 @@
 
     .no-print{ display:none !important; }
 
-    /* Il foglio NON deve avere altezza fissa né overflow nascosto:
-       così il contenuto può fluire su più pagine senza tagli. */
     .page{
       width:auto !important;
       min-height:0 !important;
@@ -236,7 +234,6 @@
       background:#fff !important;
     }
 
-    /* Blocchi che non devono spezzarsi */
     .intestazione,
     .riga-preventivo,
     .cliente-box,
@@ -250,7 +247,6 @@
 
     .cliente-box{ border-color:#5c6675; }
 
-    /* Input “puliti” in stampa */
     input, textarea, select{
       border:none !important;
       background:transparent !important;
@@ -260,7 +256,6 @@
       box-shadow:none !important;
     }
 
-    /* Descrizione: contenuto sempre visibile, mai clippato */
     table.corpo .c-desc{
       white-space: pre-wrap !important;
       overflow: visible !important;
@@ -270,21 +265,13 @@
     }
     table.corpo .c-desc:empty::before{ content:""; }
 
-    /* --- TABELLA MULTI-PAGINA --- */
     table.corpo{
       page-break-inside: auto;
       break-inside: auto;
       width:100% !important;
     }
-    /* L'intestazione della tabella si ripete su OGNI pagina */
-    table.corpo thead{
-      display: table-header-group;
-    }
-    table.corpo tbody{
-      display: table-row-group;
-    }
-    /* Le righe possono essere spezzate se davvero troppo lunghe,
-       altrimenti vengono spostate intere sulla pagina successiva */
+    table.corpo thead{ display: table-header-group; }
+    table.corpo tbody{ display: table-row-group; }
     table.corpo tbody tr{
       page-break-inside: avoid;
       break-inside: avoid;
@@ -297,7 +284,6 @@
 
     table.corpo tbody tr:hover{ background:transparent !important; }
 
-    /* Nasconde i bordi hover / focus */
     table.corpo input:focus,
     table.corpo .c-desc:focus{ background:transparent !important; }
   }
@@ -394,13 +380,13 @@
   <!-- ---------- CORPO ---------- -->
   <table class="corpo" id="tabCorpo">
     <colgroup>
-      <col style="width:12%">   <!-- Codice -->
-      <col style="width:10%">   <!-- Produttore -->
-      <col style="width:42%">   <!-- Descrizione -->
-      <col style="width:6%">    <!-- Q.tà -->
-      <col style="width:15%">   <!-- Prezzo -->
-      <col style="width:15%">   <!-- IVA incl. -->
-      <col style="width:16px" class="no-print"> <!-- Elimina -->
+      <col style="width:12%">
+      <col style="width:10%">
+      <col style="width:42%">
+      <col style="width:6%">
+      <col style="width:15%">
+      <col style="width:15%">
+      <col style="width:16px" class="no-print">
     </colgroup>
     <thead>
       <tr>
@@ -477,7 +463,6 @@ function esc(s){
     .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
     .replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-/* Normalizza un testo per il contenteditable (solo testo, niente HTML) */
 function setText(el, s){
   el.textContent = String(s ?? '');
 }
@@ -560,7 +545,6 @@ function creaRiga(d = {}){
   `;
   corpo.appendChild(tr);
 
-  /* Imposta la descrizione via textContent (gestisce a-capo, non HTML) */
   setText($('.c-desc', tr), d.descrizione || '');
 
   aggiornaRiga(tr);
@@ -578,17 +562,16 @@ function ricalcola(){
     aggiornaRiga(tr);
     const qta = parseNum($('.c-qta', tr).value) || 0;
     const imp = parseNum($('.c-imp', tr).value);
-    const ivc = imp * 1.22;      // IVA incl. = imponibile + 22%
+    const ivc = imp * 1.22;
     tImp += imp * qta;
-    tIva += (ivc - imp) * qta;   // 22% dell'imponibile
-    tDoc += ivc * qta;           // Quantità × IVA incl.
+    tIva += (ivc - imp) * qta;
+    tDoc += ivc * qta;
   });
   $('#totImp').textContent = euro(tImp);
   $('#totIva').textContent = euro(tIva);
   $('#totDoc').textContent = euro(tDoc);
 }
 
-/* Input: ricalcolo prezzi */
 corpo.addEventListener('input', e => {
   const tr = e.target.closest('tr');
   if (!tr) return;
@@ -598,7 +581,6 @@ corpo.addEventListener('input', e => {
   ricalcola();
 });
 
-/* Elimina riga */
 corpo.addEventListener('click', e => {
   if (e.target.classList.contains('del')){
     e.target.closest('tr').remove();
@@ -606,7 +588,6 @@ corpo.addEventListener('click', e => {
   }
 });
 
-/* Pulsanti aggiungi riga */
 function aggiungiRigaVuota(){
   const tr = creaRiga({ qta: 1 });
   const desc = $('.c-desc', tr);
@@ -681,6 +662,26 @@ function trovaMarca(testo){
   return best ? normalizzaMarca(best) : '';
 }
 
+/* ---------- Normalizzazione caratteri "sporchi" del PDF ---------- */
+/* Rimuove spazi unicode, char invisibili e spazi interni ai numeri:
+   "737 ,09", "737, 09", "737,0 9"  →  "737,09"                       */
+function normalizzaTestoPDF(s){
+  return String(s ?? '')
+    // spazi unicode → spazio normale
+    .replace(/[\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]/g, ' ')
+    // caratteri invisibili
+    .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '')
+    // virgole/punti "esotici" → standard
+    .replace(/[\uFF0C\u060C]/g, ',')
+    .replace(/[\uFF0E]/g, '.')
+    // cifre fullwidth → cifre normali
+    .replace(/[\uFF10-\uFF19]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+    // rimuove spazi tra cifra e , / . e viceversa
+    .replace(/(\d)\s*([.,])\s*(\d)/g, '$1$2$3')
+    // spazi multipli → singolo
+    .replace(/\s{2,}/g, ' ');
+}
+
 async function testoDaPdf(file){
   const buf  = await file.arrayBuffer();
   const pdf  = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -713,17 +714,55 @@ async function testoDaPdf(file){
 
 const RE_PREZZO = /\d{1,3}(?:\.\d{3})*,\d{2}/g;
 
+/* Tolleranza (in euro) per riconoscere la coppia Imponibile / IVA inclusa 22% */
+const TOLL_IVA = 0.15;
+
+/* Cerca, fra i prezzi trovati, la coppia (a, b) con b ≈ a * 1.22.
+   Privilegia le coppie consecutive più vicine tra loro.               */
+function coppiaPrezzi(prezzi){
+  for (let dist = 1; dist < prezzi.length; dist++){
+    for (let i = 0; i + dist < prezzi.length; i++){
+      const j = i + dist;
+      const a = parseNum(prezzi[i][0]);
+      const b = parseNum(prezzi[j][0]);
+      if (a > 0 && Math.abs(b - a * 1.22) <= TOLL_IVA){
+        return { iImp: i, iIva: j };
+      }
+    }
+  }
+  return null;
+}
+
 function interpretaRiga(riga){
+  /* --- Normalizzazione testo estratto da PDF --- */
+  riga = normalizzaTestoPDF(riga);
+
   const prezzi = [...riga.matchAll(RE_PREZZO)];
   if (prezzi.length === 0) return null;
 
   let imponibile, ivaInclusa, taglio;
+  let qta = 1;
 
-  if (prezzi.length === 1){
-    imponibile  = parseNum(prezzi[0][0]);
-    ivaInclusa  = Math.round(imponibile * 1.22 * 100) / 100;
-    taglio      = prezzi[0].index;
+  const coppia = (prezzi.length >= 2) ? coppiaPrezzi(prezzi) : null;
+
+  if (coppia){
+    /* Coppia Imponibile / IVA inclusa trovata */
+    imponibile = parseNum(prezzi[coppia.iImp][0]);
+    ivaInclusa = parseNum(prezzi[coppia.iIva][0]);
+    taglio     = prezzi[coppia.iImp].index;
+
+    /* Se dopo l'IVA c'è un altro numero intero piccolo, è la quantità */
+    for (let k = coppia.iIva + 1; k < prezzi.length; k++){
+      const q = parseNum(prezzi[k][0]);
+      if (q > 0 && Number.isInteger(q) && q < 100000){ qta = q; break; }
+    }
+  } else if (prezzi.length === 1){
+    /* Un solo prezzo: lo tratto come imponibile e calcolo l'IVA */
+    imponibile = parseNum(prezzi[0][0]);
+    ivaInclusa = Math.round(imponibile * 1.22 * 100) / 100;
+    taglio     = prezzi[0].index;
   } else {
+    /* Fallback: prendo gli ultimi due prezzi trovati */
     const a = prezzi[prezzi.length - 2];
     const b = prezzi[prezzi.length - 1];
     imponibile = parseNum(a[0]);
@@ -768,7 +807,7 @@ function interpretaRiga(riga){
   }
   descrizione = descrizione.replace(/^[-–\s]+/, '').replace(/\s*[-–]\s*$/, '').trim();
 
-  return { codice, produttore, descrizione, qta: 1, imponibile, ivaInclusa };
+  return { codice, produttore, descrizione, qta, imponibile, ivaInclusa };
 }
 
 function righeDaTesto(righe){
