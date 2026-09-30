@@ -28,7 +28,6 @@
     print-color-adjust:exact;
   }
 
-  /* ============ TOOLBAR ============ */
   .toolbar{
     position:sticky; top:0; z-index:50;
     max-width:210mm; margin:0 auto 14px;
@@ -52,7 +51,6 @@
   .hint{ font-size:11px; color:#666; width:100%; margin:2px 0 0; line-height:1.45; }
   .hint strong{ color:#333; }
 
-  /* ============ FOGLIO ============ */
   .page{
     width:210mm;
     padding:12mm 11mm;
@@ -61,7 +59,6 @@
     position:relative;
   }
 
-  /* ---------- INTESTAZIONE ---------- */
   .intestazione{
     display:flex; align-items:center; gap:16px;
     margin-bottom:6px;
@@ -75,7 +72,6 @@
   .riga-blu{ height:3px; background:var(--blu); margin:4px 0 6px; }
   .azienda p{ margin:0; font-size:9.5pt; line-height:1.35; }
 
-  /* ---------- NUMERO PREVENTIVO ---------- */
   .riga-preventivo{
     border-bottom:1.6px solid #000;
     padding:10px 0 5px;
@@ -85,7 +81,6 @@
   .riga-preventivo .edit{ padding:0 2px; border-bottom:1px dotted transparent; }
   .riga-preventivo .edit:hover{ border-bottom-color:#999; }
 
-  /* ---------- ANAGRAFICA ---------- */
   .cliente-box{
     border:1.4px solid #7d8794;
     border-radius:9px;
@@ -109,7 +104,6 @@
   .cliente-box .ragione label{ visibility:hidden; }
   .cliente-box textarea{ min-height:34px; font-size:9.5pt; }
 
-  /* ---------- CORPO / TABELLA ARTICOLI ---------- */
   table.corpo{
     width:100%; border-collapse:collapse; table-layout:fixed;
     margin-bottom:6px;
@@ -136,7 +130,6 @@
   table.corpo input:focus{ background:#fffbe0; outline:none; }
   table.corpo input[readonly]{ color:#222; cursor:default; }
 
-  /* Descrizione: div contenteditable che cresce da solo e non viene mai tagliato */
   table.corpo .c-desc{
     font: inherit;
     font-size: 9pt;
@@ -144,7 +137,7 @@
     min-height: 1.3em;
     padding: 1px 1px;
     outline: none;
-    white-space: pre-wrap;      /* mantiene gli a-capo */
+    white-space: pre-wrap;
     word-wrap: break-word;
     overflow-wrap: anywhere;
     overflow: visible;
@@ -163,7 +156,6 @@
     cursor:pointer; line-height:1; padding:0 2px;
   }
 
-  /* ---------- PULSANTE AGGIUNGI RIGA ---------- */
   .btn-add-riga{
     display:inline-block; font:inherit; font-size:11px;
     padding:5px 12px; margin:2px 0 8px;
@@ -172,7 +164,6 @@
   }
   .btn-add-riga:hover{ background:#e5ebf8; border-color:var(--blu); }
 
-  /* ---------- TOTALI ---------- */
   .totals-block{
     display:flex; justify-content:flex-end;
     margin-top:8px; margin-bottom:14px;
@@ -187,7 +178,6 @@
     padding-top:4px; padding-bottom:3px;
   }
 
-  /* ---------- PAGAMENTO / NOTE FINALI ---------- */
   .blocco-finale{
     margin-top:46px;
     font-size:9.5pt;
@@ -205,12 +195,8 @@
 
   .riga-pagamento{ margin-bottom:26px; }
 
-  /* ---------- MODALITÀ SENZA TOTALI ---------- */
   body.senza-totali .totals-block{ display:none !important; }
 
-  /* ============================================================
-     ============  STAMPA – GESTIONE MULTI-PAGINA  ==============
-     ============================================================ */
   @media print{
     html, body{
       background:#fff !important;
@@ -291,7 +277,6 @@
 </head>
 <body>
 
-<!-- ============================ TOOLBAR ============================ -->
 <div class="toolbar no-print">
   <span class="titolo">Preventivo Aris Computer</span>
 
@@ -314,10 +299,8 @@
   </p>
 </div>
 
-<!-- ============================ FOGLIO ============================ -->
 <div class="page" id="foglio">
 
-  <!-- ---------- INTESTAZIONE ---------- -->
   <header class="intestazione">
     <div class="logo">
       <svg viewBox="0 0 170 95" width="150" height="84" aria-label="Aris Computer">
@@ -343,13 +326,11 @@
     </div>
   </header>
 
-  <!-- ---------- NUMERO / DATA ---------- -->
   <div class="riga-preventivo">
     Preventivo N° <span class="edit" id="numPrev" contenteditable="true">1/2026</span>
     del <span class="edit" id="dataPrev" contenteditable="true">01/01/2026</span>
   </div>
 
-  <!-- ---------- ANAGRAFICA CLIENTE ---------- -->
   <section class="cliente-box" id="anagrafica">
     <div class="campo ragione">
       <label>Cliente</label>
@@ -377,7 +358,6 @@
     </div>
   </section>
 
-  <!-- ---------- CORPO ---------- -->
   <table class="corpo" id="tabCorpo">
     <colgroup>
       <col style="width:12%">
@@ -404,7 +384,6 @@
 
   <button class="btn-add-riga no-print" id="btnRigaSotto">+ Aggiungi articolo manualmente</button>
 
-  <!-- ---------- TOTALI ---------- -->
   <div class="totals-block">
     <table class="totali">
       <tr>
@@ -422,7 +401,6 @@
     </table>
   </div>
 
-  <!-- ---------- PAGAMENTO / VALIDITÀ ---------- -->
   <div class="blocco-finale">
 
     <p class="riga-pagamento">
@@ -445,9 +423,8 @@
     </p>
   </div>
 
-</div><!-- /page -->
+</div>
 
-<!-- ============================ SCRIPT ============================ -->
 <script>
 /* =========================================================
    0. UTILITÀ
@@ -474,6 +451,11 @@ function parseNum(v){
   if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.');
   const n = parseFloat(v);
   return isNaN(n) ? 0 : n;
+}
+
+/* Arrotonda a 2 decimali (centesimi) */
+function r2(n){
+  return Math.round((Number(n) || 0) * 100) / 100;
 }
 
 function fmt(n){
@@ -531,8 +513,8 @@ const corpo = $('#corpo');
 
 function creaRiga(d = {}){
   const tr = document.createElement('tr');
-  const imp = d.imponibile != null ? d.imponibile : '';
-  const ivc = d.imponibile != null ? (d.imponibile * 1.22) : '';
+  const imp = d.imponibile != null ? r2(d.imponibile) : '';
+  const ivc = d.imponibile != null ? r2(d.imponibile * 1.22) : '';
 
   tr.innerHTML = `
     <td><input class="c-codice" value="${esc(d.codice || '')}"></td>
@@ -552,21 +534,24 @@ function creaRiga(d = {}){
 }
 
 function aggiornaRiga(tr){
-  const imp = parseNum($('.c-imp', tr).value);
-  $('.c-iva', tr).value = fmt(imp * 1.22);
+  const imp = r2(parseNum($('.c-imp', tr).value));
+  const ivc = r2(imp * 1.22);
+  $('.c-iva', tr).value = fmt(ivc);
+  return { imp, ivc };
 }
 
 function ricalcola(){
   let tImp = 0, tIva = 0, tDoc = 0;
   $$('#corpo tr').forEach(tr => {
-    aggiornaRiga(tr);
+    const { imp, ivc } = aggiornaRiga(tr);
     const qta = parseNum($('.c-qta', tr).value) || 0;
-    const imp = parseNum($('.c-imp', tr).value);
-    const ivc = imp * 1.22;
-    tImp += imp * qta;
-    tIva += (ivc - imp) * qta;
-    tDoc += ivc * qta;
+    const rigaImp = r2(imp * qta);
+    const rigaDoc = r2(ivc * qta);
+    tImp = r2(tImp + rigaImp);
+    tDoc = r2(tDoc + rigaDoc);
   });
+  tIva = r2(tDoc - tImp);
+
   $('#totImp').textContent = euro(tImp);
   $('#totIva').textContent = euro(tIva);
   $('#totDoc').textContent = euro(tDoc);
@@ -662,23 +647,15 @@ function trovaMarca(testo){
   return best ? normalizzaMarca(best) : '';
 }
 
-/* ---------- Normalizzazione caratteri "sporchi" del PDF ---------- */
-/* Rimuove spazi unicode, char invisibili e spazi interni ai numeri:
-   "737 ,09", "737, 09", "737,0 9"  →  "737,09"                       */
+/* Normalizzazione caratteri "sporchi" del PDF */
 function normalizzaTestoPDF(s){
   return String(s ?? '')
-    // spazi unicode → spazio normale
     .replace(/[\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]/g, ' ')
-    // caratteri invisibili
     .replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '')
-    // virgole/punti "esotici" → standard
     .replace(/[\uFF0C\u060C]/g, ',')
     .replace(/[\uFF0E]/g, '.')
-    // cifre fullwidth → cifre normali
     .replace(/[\uFF10-\uFF19]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
-    // rimuove spazi tra cifra e , / . e viceversa
     .replace(/(\d)\s*([.,])\s*(\d)/g, '$1$2$3')
-    // spazi multipli → singolo
     .replace(/\s{2,}/g, ' ');
 }
 
@@ -713,12 +690,8 @@ async function testoDaPdf(file){
 }
 
 const RE_PREZZO = /\d{1,3}(?:\.\d{3})*,\d{2}/g;
-
-/* Tolleranza (in euro) per riconoscere la coppia Imponibile / IVA inclusa 22% */
 const TOLL_IVA = 0.15;
 
-/* Cerca, fra i prezzi trovati, la coppia (a, b) con b ≈ a * 1.22.
-   Privilegia le coppie consecutive più vicine tra loro.               */
 function coppiaPrezzi(prezzi){
   for (let dist = 1; dist < prezzi.length; dist++){
     for (let i = 0; i + dist < prezzi.length; i++){
@@ -734,35 +707,24 @@ function coppiaPrezzi(prezzi){
 }
 
 function interpretaRiga(riga){
-  /* --- Normalizzazione testo estratto da PDF --- */
   riga = normalizzaTestoPDF(riga);
 
   const prezzi = [...riga.matchAll(RE_PREZZO)];
   if (prezzi.length === 0) return null;
 
   let imponibile, ivaInclusa, taglio;
-  let qta = 1;
 
   const coppia = (prezzi.length >= 2) ? coppiaPrezzi(prezzi) : null;
 
   if (coppia){
-    /* Coppia Imponibile / IVA inclusa trovata */
     imponibile = parseNum(prezzi[coppia.iImp][0]);
     ivaInclusa = parseNum(prezzi[coppia.iIva][0]);
     taglio     = prezzi[coppia.iImp].index;
-
-    /* Se dopo l'IVA c'è un altro numero intero piccolo, è la quantità */
-    for (let k = coppia.iIva + 1; k < prezzi.length; k++){
-      const q = parseNum(prezzi[k][0]);
-      if (q > 0 && Number.isInteger(q) && q < 100000){ qta = q; break; }
-    }
   } else if (prezzi.length === 1){
-    /* Un solo prezzo: lo tratto come imponibile e calcolo l'IVA */
     imponibile = parseNum(prezzi[0][0]);
-    ivaInclusa = Math.round(imponibile * 1.22 * 100) / 100;
+    ivaInclusa = r2(imponibile * 1.22);
     taglio     = prezzi[0].index;
   } else {
-    /* Fallback: prendo gli ultimi due prezzi trovati */
     const a = prezzi[prezzi.length - 2];
     const b = prezzi[prezzi.length - 1];
     imponibile = parseNum(a[0]);
@@ -807,7 +769,10 @@ function interpretaRiga(riga){
   }
   descrizione = descrizione.replace(/^[-–\s]+/, '').replace(/\s*[-–]\s*$/, '').trim();
 
-  return { codice, produttore, descrizione, qta, imponibile, ivaInclusa };
+  /* IMPORTANTE: la colonna "Q.tà" del listino TD SYNNEX NON è la quantità
+     da ordinare, ma la disponibilità di magazzino del fornitore.
+     Nel preventivo la quantità parte sempre da 1 (modificabile a mano). */
+  return { codice, produttore, descrizione, qta: 1, imponibile, ivaInclusa };
 }
 
 function righeDaTesto(righe){
